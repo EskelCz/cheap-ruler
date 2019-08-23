@@ -71,34 +71,34 @@ function CheapRuler(lat, units) {
 
 CheapRuler.prototype = {
     /**
-     * Given two points of the form [longitude, latitude], returns the distance.
+     * Given two points of the form {latitude, longitude}, returns the distance.
      *
-     * @param {Array<number>} a point [longitude, latitude]
-     * @param {Array<number>} b point [longitude, latitude]
+     * @param {Object} a point {latitude, longitude}
+     * @param {Object} b point {latitude, longitude}
      * @returns {number} distance
      * @example
-     * var distance = ruler.distance([30.5, 50.5], [30.51, 50.49]);
+     * var distance = ruler.distance({latitude: 50.5, longitude: 30.5}, {latitude: 50.49, longitude: 30.51]);
      * //=distance
      */
     distance: function (a, b) {
-        var dx = (a[0] - b[0]) * this.kx;
-        var dy = (a[1] - b[1]) * this.ky;
+        var dx = (a.longitude - b.longitude) * this.kx;
+        var dy = (a.latitude - b.latitude) * this.ky;
         return Math.sqrt(dx * dx + dy * dy);
     },
 
     /**
      * Returns the bearing between two points in angles.
      *
-     * @param {Array<number>} a point [longitude, latitude]
-     * @param {Array<number>} b point [longitude, latitude]
+     * @param {Object} a point {latitude, longitude}
+     * @param {Object} b point {latitude, longitude}
      * @returns {number} bearing
      * @example
-     * var bearing = ruler.bearing([30.5, 50.5], [30.51, 50.49]);
+     * var bearing = ruler.bearing({latitude: 50.5, longitude: 30.5}, {latitude: 50.49, longitude: 30.51]);
      * //=bearing
      */
     bearing: function (a, b) {
-        var dx = (b[0] - a[0]) * this.kx;
-        var dy = (b[1] - a[1]) * this.ky;
+        var dx = (b.longitude - a.longitude) * this.kx;
+        var dy = (b.latitude - a.latitude) * this.ky;
         if (!dx && !dy) return 0;
         var bearing = Math.atan2(dx, dy) * 180 / Math.PI;
         if (bearing > 180) bearing -= 360;
@@ -108,12 +108,12 @@ CheapRuler.prototype = {
     /**
      * Returns a new point given distance and bearing from the starting point.
      *
-     * @param {Array<number>} p point [longitude, latitude]
+     * @param {Object} p point {latitude, longitude}
      * @param {number} dist distance
      * @param {number} bearing
-     * @returns {Array<number>} point [longitude, latitude]
+     * @returns {Object} point {latitude, longitude}
      * @example
-     * var point = ruler.destination([30.5, 50.5], 0.1, 90);
+     * var point = ruler.destination({latitude: 50.5, longitude: 30.5}, 0.1, 90);
      * //=point
      */
     destination: function (p, dist, bearing) {
@@ -126,30 +126,30 @@ CheapRuler.prototype = {
     /**
      * Returns a new point given easting and northing offsets (in ruler units) from the starting point.
      *
-     * @param {Array<number>} p point [longitude, latitude]
+     * @param {Object} p point {latitude, longitude}
      * @param {number} dx easting
      * @param {number} dy northing
-     * @returns {Array<number>} point [longitude, latitude]
+     * @returns {Object} point {latitude, longitude}
      * @example
-     * var point = ruler.offset([30.5, 50.5], 10, 10);
+     * var point = ruler.offset({latitude: 50.5, longitude: 30.5}, 10, 10);
      * //=point
      */
     offset: function (p, dx, dy) {
-        return [
-            p[0] + dx / this.kx,
-            p[1] + dy / this.ky
-        ];
+        return {
+            latitude: p.latitude + dy / this.ky,
+            longitude: p.longitude + dx / this.kx
+        };
     },
 
     /**
      * Given a line (an array of points), returns the total line distance.
      *
-     * @param {Array<Array<number>>} points [longitude, latitude]
+     * @param {Array{Object}} points {latitude, longitude}
      * @returns {number} total line distance
      * @example
      * var length = ruler.lineDistance([
-     *     [-67.031, 50.458], [-67.031, 50.534],
-     *     [-66.929, 50.534], [-66.929, 50.458]
+     *      {latitude: 50.458, longitude: -67.031}, {latitude: 50.534, longitude: -67.031}
+     *      {latitude: 50.534, longitude: -66.929}, {latitude: 50.458, longitude: -66.929}
      * ]);
      * //=length
      */
@@ -164,12 +164,12 @@ CheapRuler.prototype = {
     /**
      * Given a polygon (an array of rings, where each ring is an array of points), returns the area.
      *
-     * @param {Array<Array<Array<number>>>} polygon
+     * @param {Array<Array{Object}>} polygon
      * @returns {number} area value in the specified units (square kilometers by default)
      * @example
      * var area = ruler.area([[
-     *     [-67.031, 50.458], [-67.031, 50.534], [-66.929, 50.534],
-     *     [-66.929, 50.458], [-67.031, 50.458]
+     *     {latitude: 50.458, longitude: -67.031}, {latitude: 50.534, longitude: -67.031}, {latitude: 50.534, longitude: -66.929},
+     *     {latitude: 50.458, longitude: -66.929}, {latitude: 50.458, longitude: -67.031}
      * ]]);
      * //=area
      */
@@ -180,7 +180,7 @@ CheapRuler.prototype = {
             var ring = polygon[i];
 
             for (var j = 0, len = ring.length, k = len - 1; j < len; k = j++) {
-                sum += (ring[j][0] - ring[k][0]) * (ring[j][1] + ring[k][1]) * (i ? -1 : 1);
+                sum += (ring[j].longitude - ring[k].longitude) * (ring[j].latitude + ring[k].latitude) * (i ? -1 : 1);
             }
         }
 
@@ -190,9 +190,9 @@ CheapRuler.prototype = {
     /**
      * Returns the point at a specified distance along the line.
      *
-     * @param {Array<Array<number>>} line
+     * @param {Array{Object}} line
      * @param {number} dist distance
-     * @returns {Array<number>} point [longitude, latitude]
+     * @returns {Object} point {latitude, longitude}
      * @example
      * var point = ruler.along(line, 2.5);
      * //=point
@@ -219,11 +219,11 @@ CheapRuler.prototype = {
      * and t is a parameter from 0 to 1 that indicates where the closest point is on that segment.
      *
      * @pointOnLine
-     * @param {Array<Array<number>>} line
-     * @param {Array<number>} p point [longitude, latitude]
+     * @param {Array{Object}>} line
+     * @param {Object} p point {latitude, longitude}
      * @returns {Object} {point, index, t}
      * @example
-     * var point = ruler.pointOnLine(line, [-67.04, 50.5]).point;
+     * var point = ruler.pointOnLine(line, {latitude: 50.5, longitude: -67.04}).point;
      * //=point
      */
     pointOnLine: function (line, p) {
@@ -232,18 +232,18 @@ CheapRuler.prototype = {
 
         for (var i = 0; i < line.length - 1; i++) {
 
-            var x = line[i][0];
-            var y = line[i][1];
-            var dx = (line[i + 1][0] - x) * this.kx;
-            var dy = (line[i + 1][1] - y) * this.ky;
+            var x = line[i].longitude;
+            var y = line[i].latitude;
+            var dx = (line[i + 1].longitude - x) * this.kx;
+            var dy = (line[i + 1].latitude - y) * this.ky;
 
             if (dx !== 0 || dy !== 0) {
 
-                var t = ((p[0] - x) * this.kx * dx + (p[1] - y) * this.ky * dy) / (dx * dx + dy * dy);
+                var t = ((p.longitude - x) * this.kx * dx + (p.latitude - y) * this.ky * dy) / (dx * dx + dy * dy);
 
                 if (t > 1) {
-                    x = line[i + 1][0];
-                    y = line[i + 1][1];
+                    x = line[i + 1].longitude;
+                    y = line[i + 1].latitude;
 
                 } else if (t > 0) {
                     x += (dx / this.kx) * t;
@@ -251,8 +251,8 @@ CheapRuler.prototype = {
                 }
             }
 
-            dx = (p[0] - x) * this.kx;
-            dy = (p[1] - y) * this.ky;
+            dx = (p.longitude - x) * this.kx;
+            dy = (p.latitude - y) * this.ky;
 
             var sqDist = dx * dx + dy * dy;
             if (sqDist < minDist) {
@@ -265,7 +265,7 @@ CheapRuler.prototype = {
         }
 
         return {
-            point: [minX, minY],
+            point: { latitude: minY, longitude: minX },
             index: minI,
             t: Math.max(0, Math.min(1, minT))
         };
@@ -274,12 +274,12 @@ CheapRuler.prototype = {
     /**
      * Returns a part of the given line between the start and the stop points (or their closest points on the line).
      *
-     * @param {Array<number>} start point [longitude, latitude]
-     * @param {Array<number>} stop point [longitude, latitude]
-     * @param {Array<Array<number>>} line
-     * @returns {Array<Array<number>>} line part of a line
+     * @param {Array{Object}} start point {latitude, longitude}
+     * @param {Array{Object}} stop point {latitude, longitude}
+     * @param {Array<Array{Object}>} line
+     * @returns {Array<Array{Object}>} line part of a line
      * @example
-     * var line2 = ruler.lineSlice([-67.04, 50.5], [-67.05, 50.56], line1);
+     * var line2 = ruler.lineSlice({latitude: 50.5, longitude: -67.04}, {latitude: 50.56, longitude: -67.05}, line1);
      * //=line2
      */
     lineSlice: function (start, stop, line) {
@@ -315,8 +315,8 @@ CheapRuler.prototype = {
      *
      * @param {number} start distance
      * @param {number} stop distance
-     * @param {Array<Array<number>>} line
-     * @returns {Array<Array<number>>} line part of a line
+     * @param {Array<Array{Object}>} line
+     * @returns {Array<Array{Object}>} line part of a line
      * @example
      * var line2 = ruler.lineSliceAlong(10, 20, line1);
      * //=line2
@@ -350,21 +350,21 @@ CheapRuler.prototype = {
     /**
      * Given a point, returns a bounding box object ([w, s, e, n]) created from the given point buffered by a given distance.
      *
-     * @param {Array<number>} p point [longitude, latitude]
+     * @param {Object} p point {latitude, longitude}
      * @param {number} buffer
      * @returns {Array<number>} box object ([w, s, e, n])
      * @example
-     * var bbox = ruler.bufferPoint([30.5, 50.5], 0.01);
+     * var bbox = ruler.bufferPoint({latitude: 50.5, longitude: 30.5}, 0.01);
      * //=bbox
      */
     bufferPoint: function (p, buffer) {
         var v = buffer / this.ky;
         var h = buffer / this.kx;
         return [
-            p[0] - h,
-            p[1] - v,
-            p[0] + h,
-            p[1] + v
+            p.longitude - h,
+            p.latitude - v,
+            p.longitude + h,
+            p.latitude + v
         ];
     },
 
@@ -392,30 +392,30 @@ CheapRuler.prototype = {
     /**
      * Returns true if the given point is inside in the given bounding box, otherwise false.
      *
-     * @param {Array<number>} p point [longitude, latitude]
+     * @param {Object} p point {latitude, longitude}
      * @param {Array<number>} box object ([w, s, e, n])
      * @returns {boolean}
      * @example
-     * var inside = ruler.insideBBox([30.5, 50.5], [30, 50, 31, 51]);
+     * var inside = ruler.insideBBox({latitude: 30.5, longitude: 50.5}, [30, 50, 31, 51]);
      * //=inside
      */
     insideBBox: function (p, bbox) {
-        return p[0] >= bbox[0] &&
-               p[0] <= bbox[2] &&
-               p[1] >= bbox[1] &&
-               p[1] <= bbox[3];
+        return p.longitude >= bbox[0] &&
+            p.longitude <= bbox[2] &&
+            p.latitude >= bbox[1] &&
+            p.latitude <= bbox[3];
     }
 };
 
-function equals(a, b) {
-    return a[0] === b[0] && a[1] === b[1];
+function equals (a, b) {
+    return a.latitude === b.latitude && a.longitude === b.longitude;
 }
 
-function interpolate(a, b, t) {
-    var dx = b[0] - a[0];
-    var dy = b[1] - a[1];
+function interpolate (a, b, t) {
+    var dx = b.longitude - a.longitude;
+    var dy = b.latitude - a.latitude;
     return [
-        a[0] + dx * t,
-        a[1] + dy * t
+        a.longitude + dx * t,
+        a.latitude + dy * t
     ];
 }

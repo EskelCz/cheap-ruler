@@ -1,7 +1,7 @@
 declare function cheapRuler(lat: number, units?: string): cheapRuler.CheapRuler;
 declare namespace cheapRuler {
     type BBox = [number, number, number, number]
-    type Point = [number, number]
+    type Point = { latitude: number, longitude: number }
     type Line = Point[]
     type Points = Point[]
     type Polygon = Point[][]
@@ -13,7 +13,7 @@ declare namespace cheapRuler {
         lineDistance(points: Points): number;
         area(polygon: Polygon): number;
         along(line: Line, dist: number): Point;
-        pointOnLine(line: Line, p: Point): {point: Point, index: number, t: number};
+        pointOnLine(line: Line, p: Point): { point: Point, index: number, t: number };
         lineSlice(start: Point, stop: Point, line: Line): Line;
         lineSliceAlong(start: number, stop: number, line: Line): Line;
         bufferPoint(p: Point, buffer: number): BBox;
