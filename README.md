@@ -1,4 +1,4 @@
-For of cheap-ruler, using {latitude, longitude} object for all Point inputs and outputs.
+Fork of cheap-ruler, using {latitude, longitude} object for all Point inputs and outputs.
 Tests are not covered yet, only tested distance method manually.
 
 ------------------
